@@ -41,7 +41,7 @@ def capturaTodosDiscos():
 
 def capturaUsoDisco(pontoMontagem):
     """Captura informações de uso de disco (total, usado, livre) em GB."""
-    '''Estou usando try ... except pois pode ser buscado um ponto de
+    '''Estou usando try ... except   pois pode ser buscado um ponto de
      montagem inexistente aqui, então evitamos que o programa quebre.'''
     try:
         uso = ps.disk_usage(pontoMontagem)
