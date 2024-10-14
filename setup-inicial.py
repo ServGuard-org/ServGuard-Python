@@ -84,12 +84,13 @@ def cadastrarMaquina(idEmpresa, mac):
     qtdNucleosFisicos = cd.capturaQtdNucleos(logicos=False)
     qtdNucleosLogicos = cd.capturaQtdNucleos(logicos=True)
     capacidadeRAM = cd.capturaQtdRAM()
+    nomeMaquina = cd.capturaNomeComputador()
 
     # Executando a inserção da máquina no banco de dados
     query = f"""
         INSERT INTO Maquina 
         (nome, fkEmpresa, modeloCPU, qtdNucleosFisicos, qtdNucleosLogicos, capacidadeRAM, MACAddress)
-        VALUES ('Nova Maquina', {idEmpresa}, '{modeloCPU}', {qtdNucleosFisicos}, {qtdNucleosLogicos}, {capacidadeRAM}, '{mac}');
+        VALUES ('{nomeMaquina}', {idEmpresa}, '{modeloCPU}', {qtdNucleosFisicos}, {qtdNucleosLogicos}, {capacidadeRAM}, '{mac}');
         """
     db.executarQuery(query)
     # Chama a função que inscreve a máquina nas capturas
@@ -101,11 +102,17 @@ def inscreverCapturas(mac):
     # Obtendo o id de recurso para cada um dos recursos que monitoramos:
     idRecursoCPU = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoCPU';")[0][0]
     idRecursoRAM = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoRAM';")[0][0]
-    idRecursoUsadoDisco = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usadoDisco';")[0][0]
-    idRecursoLivreDisco = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'livreDisco';")[0][0]
+    idRecursoerroPCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesEntrada';")[0][0]
+    idRecursoerroPCTSaida = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesSaida';")[0][0]
+    idRecursoDescartePCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesEntrada';")[0][0]
+    idRecursoDescartePCTSaida = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesSaida';")[0][0]
+    idRecursoMBRecebidos = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'megabytesRecebidos';")[0][0]
+    idRecursoMBEnviados = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'megabytesEnviados';")[0][0]
+    idRecursoPCTEnviados = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'pacotesEnviados';")[0][0]
+    idRecursoPCTRecebidos = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'pacotesRecebidos';")[0][0]
 
     # Setando uma lista para fazer de forma mais rápida a inscrição
-    listaRecursos = [idRecursoCPU, idRecursoRAM, idRecursoUsadoDisco, idRecursoLivreDisco]
+    listaRecursos = [idRecursoCPU, idRecursoRAM, idRecursoerroPCTEnt, idRecursoerroPCTSaida, idRecursoDescartePCTEnt, idRecursoDescartePCTSaida, idRecursoMBRecebidos, idRecursoMBEnviados, idRecursoPCTEnviados, idRecursoPCTRecebidos]
 
     # obtendo o id da máquina através do MAC Address
     idMaquina = db.executarSelect(f"SELECT idMaquina FROM Maquina WHERE MACAddress = '{mac}'")[0][0]
@@ -115,14 +122,29 @@ def inscreverCapturas(mac):
         query = f"INSERT INTO MaquinaRecurso (fkMaquina, fkRecurso) VALUES ({idMaquina}, {recurso})"
         db.executarQuery(query)
 
+    discos = cd.capturaTodosDiscos()
+    for disco in discos:
+        pontoMontagem = disco.mountpoint
+        usoDisco = cd.capturaUsoDisco(pontoMontagem)
+        query = None
+        if os.name == 'nt':
+            query = f"INSERT INTO Volume (fkMaquina, pontoMontagem, capacidade) VALUES ({idMaquina}, '{disco.mountpoint}\\', {usoDisco['total']})"
+        elif os.name == 'posix':
+            query = f"INSERT INTO Volume (fkMaquina, pontoMontagem, capacidade) VALUES ({idMaquina}, '{disco.mountpoint}', {usoDisco['total']})"
+        if query:
+            db.executarQuery(query)
+
 def capturarDados(idEmpresa, mac):
     # Função principal do sistema, captura de dados
 
     # Obtendo o id de recurso de cada componente
     idRecursoCPU = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoCPU';")[0][0]
     idRecursoRAM = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoRAM';")[0][0]
-    idRecursoUsadoDisco = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usadoDisco';")[0][0]
-    idRecursoLivreDisco = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'livreDisco';")[0][0]
+    idRecursoDescartePCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesEntrada';")[0][0]
+    idRecursoDescartePCTSai = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesSaida';")[0][0]
+    idRecursoerroPCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesEntrada';")[0][0]
+    idRecursoerroPCTSai = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesSaida';")[0][0]
+
 
     # Obtendo o id da máquina no BD
     idMaquina = db.executarSelect(f"SELECT idMaquina FROM Maquina WHERE MACAddress = '{mac}';")[0][0]
@@ -135,18 +157,25 @@ def capturarDados(idEmpresa, mac):
     maxRAM = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoRAM}")
     maxRAM = maxRAM[0][0] if maxRAM else None
 
-    maxUsadoDisco = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoUsadoDisco}")
-    maxUsadoDisco = maxUsadoDisco[0][0] if maxUsadoDisco else None
+    maxDescaPCTEnt = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTEnt}")
+    maxDescaPCTEnt = maxDescaPCTEnt[0][0] if maxDescaPCTEnt else None
 
-    maxLivreDisco = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoLivreDisco}")
-    maxLivreDisco = maxLivreDisco[0][0] if maxLivreDisco else None
+    maxDescaPCTSai = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTSai}")
+    maxDescaPCTSai = maxDescaPCTSai[0][0] if maxDescaPCTSai else None
+
+    maxerroPCTEnt = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTEnt}")
+    maxerroPCTEnt = maxerroPCTEnt[0][0] if maxerroPCTEnt else None
+
+    maxerroPCTSai = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTSai}")
+    maxerroPCTSai = maxerroPCTSai[0][0] if maxerroPCTSai else None
 
     # Obtendo os ids de relacionamento da máquina com cada recurso, para usar mais a frente
     idMaquinaRecursoCPU = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoCPU};")[0][0]
     idMaquinaRecursoRAM = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoRAM};")[0][0]
-
-    idMaquinaRecursoUsadoDisco = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoUsadoDisco};")[0][0]
-    idMaquinaRecursoLivreDisco = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoLivreDisco};")[0][0]
+    idMaquinaRecursoDescartePCTEnt = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTEnt};")[0][0]
+    idMaquinaRecursoDescartePCTSai = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTSai};")[0][0]
+    idMaquinaRecursoerroPCTEnt = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTEnt};")[0][0]
+    idMaquinaRecursoerroPCTSai = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTSai};")[0][0]
 
     # Capturando todos os discos da máquina
     discos = cd.capturaTodosDiscos()
@@ -165,26 +194,42 @@ def capturarDados(idEmpresa, mac):
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoRAM}, {usoRAM});"
         db.executarQuery(query)
 
+        # Capturando descarte de pacotes
+        descarteEnt = cd.capturaDescarteEnt()
+        descarteSai = cd.capturaDescarteSai()
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoDescartePCTEnt}, {descarteEnt});"
+        db.executarQuery(query)
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoDescartePCTSai}, {descarteSai});"
+        db.executarQuery(query)
+
+        # Capturando erro de pacotes
+        erroEnt = cd.capturaErrEnt()
+        erroSai = cd.capturaErrSai()
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoerroPCTEnt}, {erroEnt});"
+        db.executarQuery(query)
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoerroPCTSai}, {erroSai});"
+        db.executarQuery(query)
+
         # Só insere novos dados de disco caso seja a primeira vez desde que o sistema foi iniciado OU
         # Se o resto de contador / 60 for 0, ou seja,
         # dado um time.sleep de 30s, isso é:
         # monitoramento a cada 30 minutos
-        if counter == 0 or counter % 60 == 0:
-            for disco in discos:
-                pontoMontagem = disco.mountpoint
-                dadosDisco = cd.capturaUsoDisco(pontoMontagem)
-                usadoDisco = dadosDisco['usado']
-                livreDisco = dadosDisco['livre']
-
-                # Inserindo uso de disco usado
-                query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoUsadoDisco}, {usadoDisco})"
-                # Implementar disparo de alerta aqui verificando se é >= ao max deste recurso
-                db.executarQuery(query)
-
-                # Inserindo qtd livre de disco
-                query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoLivreDisco}, {livreDisco})"
-                # Implementar disparo de alerta aqui verificando se é <= ao max deste recurso
-                db.executarQuery(query)
+        # if counter == 0 or counter % 60 == 0:
+        #     for disco in discos:
+        #         pontoMontagem = disco.mountpoint
+        #         dadosDisco = cd.capturaUsoDisco(pontoMontagem)
+        #         usadoDisco = dadosDisco['usado']
+        #         livreDisco = dadosDisco['livre']
+        #
+        #         # Inserindo uso de disco usado
+        #         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoUsadoDisco}, {usadoDisco})"
+        #         # Implementar disparo de alerta aqui verificando se é >= ao max deste recurso
+        #         db.executarQuery(query)
+        #
+        #         # Inserindo qtd livre de disco
+        #         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoLivreDisco}, {livreDisco})"
+        #         # Implementar disparo de alerta aqui verificando se é <= ao max deste recurso
+        #         db.executarQuery(query)
         counter += 1
 
         # Pausa por 30 segundos

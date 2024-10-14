@@ -1,6 +1,7 @@
 import psutil as ps
 import cpuinfo as cpi
 from getmac import get_mac_address
+import socket as sk
 
 # Arquivo de Captura de Dados
 '''
@@ -54,6 +55,10 @@ def capturaUsoDisco(pontoMontagem):
     except Exception as e:
         print(f"Erro ao acessar o ponto de montagem: {pontoMontagem}: {e}")
         return None
+
+def capturaNomeComputador():
+    """Captura o nome do computador (hostname)."""
+    return sk.gethostname()
 
 def capturaDescarteEnt():
     return ps.net_io_counters().dropin
