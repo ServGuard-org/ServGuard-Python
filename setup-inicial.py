@@ -185,12 +185,16 @@ def capturarDados(idEmpresa, mac):
 
     while True:
         usoCPU = cd.capturaUsoCPU()
-        # Implementar disparo de alerta aqui verificando se é >= ao max deste recurso
+        if maxCPU:
+            if usoCPU >= maxCPU:
+                print(f"ALERTA!!!!!!!! USO CPU CHEGOU A: {usoCPU}")
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoCPU}, {usoCPU});"
         db.executarQuery(query)
 
         usoRAM = cd.capturaUsoRAM()
-        # Implementar disparo de alerta aqui verificando se é >= ao max deste recurso
+        if maxRAM:
+            if usoRAM >= maxRAM:
+                print(f"ALERTA!!!!!!!! USO RAM CHEGOU A: {usoRAM}")
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoRAM}, {usoRAM});"
         db.executarQuery(query)
 
