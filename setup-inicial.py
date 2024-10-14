@@ -214,22 +214,24 @@ def capturarDados(idEmpresa, mac):
         # Se o resto de contador / 60 for 0, ou seja,
         # dado um time.sleep de 30s, isso é:
         # monitoramento a cada 30 minutos
-        # if counter == 0 or counter % 60 == 0:
-        #     for disco in discos:
-        #         pontoMontagem = disco.mountpoint
-        #         dadosDisco = cd.capturaUsoDisco(pontoMontagem)
-        #         usadoDisco = dadosDisco['usado']
-        #         livreDisco = dadosDisco['livre']
-        #
-        #         # Inserindo uso de disco usado
-        #         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoUsadoDisco}, {usadoDisco})"
-        #         # Implementar disparo de alerta aqui verificando se é >= ao max deste recurso
-        #         db.executarQuery(query)
-        #
-        #         # Inserindo qtd livre de disco
-        #         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoLivreDisco}, {livreDisco})"
-        #         # Implementar disparo de alerta aqui verificando se é <= ao max deste recurso
-        #         db.executarQuery(query)
+        if counter == 0 or counter % 60 == 0:
+            for disco in discos:
+
+                pontoMontagem = disco.mountpoint
+                dadosDisco = cd.capturaUsoDisco(pontoMontagem)
+                usadoDisco = dadosDisco['usado']
+
+                idDisco = None
+                if os.name == 'nt':
+                    query = f"SELECT idVolume FROM Volume WHERE fkMaquina = {idMaquina} AND pontoMontagem = '{pontoMontagem}\\';"
+                elif os.name == 'posix':
+                    query = f"SELECT idVolume FROM Volume WHERE fkMaquina = {idMaquina} AND pontoMontagem = '{pontoMontagem}';"
+                idDisco = db.executarSelect(query)[0][0]
+
+                # Inserindo uso de disco usado
+                query = f"INSERT INTO CapturaVolume (fkVolume, usado) VALUES ({idDisco}, {usadoDisco})"
+                db.executarQuery(query)
+
         counter += 1
 
         # Pausa por 30 segundos

@@ -67,6 +67,8 @@ def executarSelect(script):
             print(f"Executando o select: {script}")
             cursor.execute(script)
             rows = cursor.fetchall()
+            for row in rows:
+                print(row)
 
     except Error as e:
         print('Error do MySQL (SELECT) -', e)
