@@ -1,5 +1,6 @@
 import database as db
 import capturaDados as cd
+import slackWebhook as sentinel
 import os
 import time
 from dotenv import load_dotenv, set_key
@@ -204,6 +205,8 @@ def capturarDados(idEmpresa, mac):
     # Contador para diferenciar a captura de disco
     counter = 0
 
+    nomeMaquina = db.executarSelect(f"SELECT nome FROM Maquina WHERE idMaquina = {idMaquina};")[0][0]
+
     while True:
         usoCPU = cd.capturaUsoCPU()
         isAlertaCPU = 0
@@ -211,6 +214,7 @@ def capturarDados(idEmpresa, mac):
             if usoCPU >= maxCPU:
                 print(f"ALERTA!!!!!!!! USO CPU CHEGOU A: {usoCPU}")
                 isAlertaCPU = 1
+                sentinel.enviar(f"Alerta! Uso da CPU da máquina de id: {idMaquina}, hostname: {nomeMaquina} chegou a {usoCPU}!!!")
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoCPU}, {usoCPU}, {isAlertaCPU});"
         db.executarQuery(query)
 
@@ -219,6 +223,7 @@ def capturarDados(idEmpresa, mac):
         if maxRAM:
             if usoRAM >= maxRAM:
                 print(f"ALERTA!!!!!!!! USO RAM CHEGOU A: {usoRAM}")
+                sentinel.enviar(f"Alerta! Uso da RAM da máquina de id: {idMaquina}, hostname: {nomeMaquina} chegou a {usoRAM}!!!")
                 isAlertaRAM = 1
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoRAM}, {usoRAM}, {isAlertaRAM});"
         db.executarQuery(query)

@@ -5,13 +5,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def enviarMensagem(mensagem):
+def enviar(mensagem):
+    # URL da API Slack
     url = os.getenv("URL_SLACK")
+    # JSON da Mensagem
     payload = {"text": mensagem}
+    # Cabeçalho HTTP
     headers = {"Content-Type":"application/json"}
+    # Efetuação da chamada HTTP [POST] para o Slack
     resposta = req.post(url, data=json.dumps(payload),headers=headers)
 
     if resposta.status_code == 200:
-        print("Mensagem enviada com sucesso!")
+        return "Mensagem enviada com sucesso!"
     else:
-        print(f"Erro ao enviar mensagem: {resposta.status_code}")
+        return f"Erro ao enviar mensagem: {resposta.status_code}"
