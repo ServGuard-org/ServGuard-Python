@@ -214,7 +214,7 @@ def capturarDados(idEmpresa, mac):
             if usoCPU >= maxCPU:
                 print(f"ALERTA!!!!!!!! USO CPU CHEGOU A: {usoCPU}")
                 isAlertaCPU = 1
-                sentinel.enviar(f"Alerta! Uso da CPU da máquina de id: {idMaquina}, hostname: {nomeMaquina} chegou a {usoCPU}!!!")
+                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso de CPU da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoCPU}%_*"))
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoCPU}, {usoCPU}, {isAlertaCPU});"
         db.executarQuery(query)
 
@@ -223,7 +223,7 @@ def capturarDados(idEmpresa, mac):
         if maxRAM:
             if usoRAM >= maxRAM:
                 print(f"ALERTA!!!!!!!! USO RAM CHEGOU A: {usoRAM}")
-                sentinel.enviar(f"Alerta! Uso da RAM da máquina de id: {idMaquina}, hostname: {nomeMaquina} chegou a {usoRAM}!!!")
+                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso de RAM da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoRAM}%_*"))
                 isAlertaRAM = 1
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoRAM}, {usoRAM}, {isAlertaRAM});"
         db.executarQuery(query)
