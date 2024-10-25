@@ -209,7 +209,7 @@ def capturarDados(idEmpresa, mac):
 
     while True:
         usoCPU = cd.capturaUsoCPU()
-        isAlertaCPU = 0
+        isAlertaCPU = 00
         if maxCPU:
             if usoCPU >= maxCPU:
                 print(f"ALERTA!!!!!!!! USO CPU CHEGOU A: {usoCPU}")
