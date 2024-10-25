@@ -79,10 +79,19 @@ def setupInicial(mac):
             continue
 
         # Verificar se o ID existe no banco de dados
-        existe = len(db.executarSelect(f"SELECT * FROM Empresa WHERE idEmpresa = {idEmpresa};")) > 0
-        if existe:
-            cadastrarMaquina(idEmpresa, mac)
-            break
+        empresa = db.executarSelect(f"SELECT * FROM Empresa WHERE idEmpresa = {idEmpresa};")
+        if len(empresa) > 0:
+            resposta = input(f"\033[3mEmpresa: {empresa[0][1]} \033[0mlocalizada. Deseja prosseguir? [S/N]: ")
+            if resposta.upper() == "S":
+                print(f"\033[3mVinculando com a empresa {empresa[0][1]}...\033[0m")
+                cadastrarMaquina(idEmpresa, mac)
+                break
+            elif resposta.upper() == "N":
+                print("...")
+                continue
+            else:
+                print("Insira uma resposta válida...")
+                continue
         else:
             print("ID não encontrado na nossa base de dados! Tente novamente.")
 

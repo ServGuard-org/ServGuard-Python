@@ -19,6 +19,8 @@ config = {
     "database": os.getenv("DATABASE")
 }
 
+prod = os.getenv("PROD")
+
 
 def executarQuery(script):
     """
@@ -31,10 +33,12 @@ def executarQuery(script):
         db = connect(**config)
         if db.is_connected():
             db_info = db.get_server_info()
-            print('Connected to MySQL server version -', db_info)
+            if not prod:
+                print('Connected to MySQL server version -', db_info)
 
             cursor = db.cursor()
-            print(f"Executando a query: {script}")
+            if not prod:
+                print(f"Executando a query: {script}")
             cursor.execute(script)
             db.commit()  # Confirma a transação no banco de dados
             print("Dados inseridos com sucesso!")
@@ -61,14 +65,17 @@ def executarSelect(script):
         db = connect(**config)
         if db.is_connected():
             db_info = db.get_server_info()
-            print('Connected to MySQL server version -', db_info)
+            if not prod:
+                print('Connected to MySQL server version -', db_info)
 
             cursor = db.cursor()
-            print(f"Executando o select: {script}")
+            if not prod:
+                print(f"Executando o select: {script}")
             cursor.execute(script)
             rows = cursor.fetchall()
-            for row in rows:
-                print(row)
+            if not prod:
+                for row in rows:
+                    print(row)
 
     except Error as e:
         print('Error do MySQL (SELECT) -', e)
