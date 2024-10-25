@@ -197,17 +197,21 @@ def capturarDados(idEmpresa, mac):
 
     while True:
         usoCPU = cd.capturaUsoCPU()
+        isAlertaCPU = 0
         if maxCPU:
             if usoCPU >= maxCPU:
                 print(f"ALERTA!!!!!!!! USO CPU CHEGOU A: {usoCPU}")
-        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoCPU}, {usoCPU});"
+                isAlertaCPU = 1
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoCPU}, {usoCPU}, {isAlertaCPU});"
         db.executarQuery(query)
 
         usoRAM = cd.capturaUsoRAM()
+        isAlertaRAM = 0
         if maxRAM:
             if usoRAM >= maxRAM:
                 print(f"ALERTA!!!!!!!! USO RAM CHEGOU A: {usoRAM}")
-        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro) VALUES ({idMaquinaRecursoRAM}, {usoRAM});"
+                isAlertaRAM = 1
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoRAM}, {usoRAM}, {isAlertaRAM});"
         db.executarQuery(query)
 
         # Capturando descarte de pacotes
