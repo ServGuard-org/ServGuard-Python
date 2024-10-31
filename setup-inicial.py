@@ -124,6 +124,7 @@ def inscreverCapturas(mac):
     # Obtendo o id de recurso para cada um dos recursos que monitoramos:
     idRecursoCPU = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoCPU';")[0][0]
     idRecursoRAM = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoRAM';")[0][0]
+    idRecursoTotal = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoTotal';")[0][0]
     idRecursoerroPCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesEntrada';")[0][0]
     idRecursoerroPCTSaida = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesSaida';")[0][0]
     idRecursoDescartePCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesEntrada';")[0][0]
@@ -134,7 +135,7 @@ def inscreverCapturas(mac):
     idRecursoPCTRecebidos = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'pacotesRecebidos';")[0][0]
 
     # Setando uma lista para fazer de forma mais rápida a inscrição
-    listaRecursos = [idRecursoCPU, idRecursoRAM, idRecursoerroPCTEnt, idRecursoerroPCTSaida, idRecursoDescartePCTEnt, idRecursoDescartePCTSaida, idRecursoMBRecebidos, idRecursoMBEnviados, idRecursoPCTEnviados, idRecursoPCTRecebidos]
+    listaRecursos = [idRecursoCPU, idRecursoRAM, idRecursoTotal, idRecursoerroPCTEnt, idRecursoerroPCTSaida, idRecursoDescartePCTEnt, idRecursoDescartePCTSaida, idRecursoMBRecebidos, idRecursoMBEnviados, idRecursoPCTEnviados, idRecursoPCTRecebidos]
 
     # obtendo o id da máquina através do MAC Address
     idMaquina = db.executarSelect(f"SELECT idMaquina FROM Maquina WHERE MACAddress = '{mac}'")[0][0]
@@ -162,6 +163,7 @@ def capturarDados(idEmpresa, mac):
     # Obtendo o id de recurso de cada componente
     idRecursoCPU = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoCPU';")[0][0]
     idRecursoRAM = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoRAM';")[0][0]
+    idRecursoTotal = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoTotal';")[0][0]
     idRecursoDescartePCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesEntrada';")[0][0]
     idRecursoDescartePCTSai = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesSaida';")[0][0]
     idRecursoerroPCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesEntrada';")[0][0]
@@ -171,29 +173,10 @@ def capturarDados(idEmpresa, mac):
     # Obtendo o id da máquina no BD
     idMaquina = db.executarSelect(f"SELECT idMaquina FROM Maquina WHERE MACAddress = '{mac}';")[0][0]
 
-    # Verificando se max existe antes de acessar
-    # Uma vez que o máximo de cada recurso deve ser definido pelo usuário via dashboard
-    maxCPU = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoCPU}")
-    maxCPU = maxCPU[0][0] if maxCPU else None  # Usando None se não houver resultado
-
-    maxRAM = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoRAM}")
-    maxRAM = maxRAM[0][0] if maxRAM else None
-
-    maxDescaPCTEnt = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTEnt}")
-    maxDescaPCTEnt = maxDescaPCTEnt[0][0] if maxDescaPCTEnt else None
-
-    maxDescaPCTSai = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTSai}")
-    maxDescaPCTSai = maxDescaPCTSai[0][0] if maxDescaPCTSai else None
-
-    maxerroPCTEnt = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTEnt}")
-    maxerroPCTEnt = maxerroPCTEnt[0][0] if maxerroPCTEnt else None
-
-    maxerroPCTSai = db.executarSelect(f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTSai}")
-    maxerroPCTSai = maxerroPCTSai[0][0] if maxerroPCTSai else None
-
     # Obtendo os ids de relacionamento da máquina com cada recurso, para usar mais a frente
     idMaquinaRecursoCPU = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoCPU};")[0][0]
     idMaquinaRecursoRAM = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoRAM};")[0][0]
+    idMaquinaRecursoTotal = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoTotal};")[0][0]
     idMaquinaRecursoDescartePCTEnt = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTEnt};")[0][0]
     idMaquinaRecursoDescartePCTSai = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTSai};")[0][0]
     idMaquinaRecursoerroPCTEnt = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTEnt};")[0][0]
@@ -208,8 +191,39 @@ def capturarDados(idEmpresa, mac):
     nomeMaquina = db.executarSelect(f"SELECT nome FROM Maquina WHERE idMaquina = {idMaquina};")[0][0]
 
     while True:
+
+        # Verificando se max existe antes de acessar
+        # Uma vez que o máximo de cada recurso deve ser definido pelo usuário via dashboard
+        maxCPU = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoCPU}")
+        maxCPU = maxCPU[0][0] if maxCPU else None  # Usando None se não houver resultado
+
+        maxRAM = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoRAM}")
+        maxRAM = maxRAM[0][0] if maxRAM else None
+
+        maxTotal = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoTotal}")
+        maxTotal = maxTotal[0][0] if maxTotal else None
+
+        maxDescaPCTEnt = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTEnt}")
+        maxDescaPCTEnt = maxDescaPCTEnt[0][0] if maxDescaPCTEnt else None
+
+        maxDescaPCTSai = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTSai}")
+        maxDescaPCTSai = maxDescaPCTSai[0][0] if maxDescaPCTSai else None
+
+        maxerroPCTEnt = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTEnt}")
+        maxerroPCTEnt = maxerroPCTEnt[0][0] if maxerroPCTEnt else None
+
+        maxerroPCTSai = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTSai}")
+        maxerroPCTSai = maxerroPCTSai[0][0] if maxerroPCTSai else None
+
         usoCPU = cd.capturaUsoCPU()
-        isAlertaCPU = 00
+        isAlertaCPU = 0
         if maxCPU:
             if usoCPU >= maxCPU:
                 print(f"ALERTA!!!!!!!! USO CPU CHEGOU A: {usoCPU}")
@@ -226,6 +240,16 @@ def capturarDados(idEmpresa, mac):
                 print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso de RAM da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoRAM}%_*"))
                 isAlertaRAM = 1
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoRAM}, {usoRAM}, {isAlertaRAM});"
+        db.executarQuery(query)
+
+        isAlertaTotal = 0
+        usoTotal = (usoCPU + usoRAM) / 2
+        if maxTotal:
+            if usoTotal >= maxTotal:
+                print(f"ALERTA!!!!!!!! USO Total CHEGOU A: {usoTotal}")
+                isAlertaTotal = 1
+                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso Total _(CPU + RAM)_ da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoTotal}%_*"))
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoTotal}, {usoTotal}, {isAlertaTotal});"
         db.executarQuery(query)
 
         # Capturando descarte de pacotes
