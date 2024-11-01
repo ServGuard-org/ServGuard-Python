@@ -4,6 +4,7 @@ import slackWebhook as sentinel
 import os
 import time
 from dotenv import load_dotenv, set_key
+import asyncio
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -125,6 +126,8 @@ def inscreverCapturas(mac):
     idRecursoCPU = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoCPU';")[0][0]
     idRecursoRAM = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoRAM';")[0][0]
     idRecursoTotal = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoTotal';")[0][0]
+    idRecursoDownload = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'velocidadeDownload';")[0][0]
+    idRecursoUpload = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'velocidadeUpload';")[0][0]
     idRecursoerroPCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesEntrada';")[0][0]
     idRecursoerroPCTSaida = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesSaida';")[0][0]
     idRecursoDescartePCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesEntrada';")[0][0]
@@ -135,7 +138,7 @@ def inscreverCapturas(mac):
     idRecursoPCTRecebidos = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'pacotesRecebidos';")[0][0]
 
     # Setando uma lista para fazer de forma mais rápida a inscrição
-    listaRecursos = [idRecursoCPU, idRecursoRAM, idRecursoTotal, idRecursoerroPCTEnt, idRecursoerroPCTSaida, idRecursoDescartePCTEnt, idRecursoDescartePCTSaida, idRecursoMBRecebidos, idRecursoMBEnviados, idRecursoPCTEnviados, idRecursoPCTRecebidos]
+    listaRecursos = [idRecursoCPU, idRecursoRAM, idRecursoTotal, idRecursoDownload, idRecursoUpload,  idRecursoerroPCTEnt, idRecursoerroPCTSaida, idRecursoDescartePCTEnt, idRecursoDescartePCTSaida, idRecursoMBRecebidos, idRecursoMBEnviados, idRecursoPCTEnviados, idRecursoPCTRecebidos]
 
     # obtendo o id da máquina através do MAC Address
     idMaquina = db.executarSelect(f"SELECT idMaquina FROM Maquina WHERE MACAddress = '{mac}'")[0][0]
@@ -164,6 +167,8 @@ def capturarDados(idEmpresa, mac):
     idRecursoCPU = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoCPU';")[0][0]
     idRecursoRAM = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoRAM';")[0][0]
     idRecursoTotal = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'usoTotal';")[0][0]
+    idRecursoDownload = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'velocidadeDownload';")[0][0]
+    idRecursoUpload = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'velocidadeUpload';")[0][0]
     idRecursoDescartePCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesEntrada';")[0][0]
     idRecursoDescartePCTSai = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'descartePacotesSaida';")[0][0]
     idRecursoerroPCTEnt = db.executarSelect("SELECT idRecurso FROM Recurso WHERE nome = 'erroPacotesEntrada';")[0][0]
@@ -177,6 +182,8 @@ def capturarDados(idEmpresa, mac):
     idMaquinaRecursoCPU = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoCPU};")[0][0]
     idMaquinaRecursoRAM = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoRAM};")[0][0]
     idMaquinaRecursoTotal = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoTotal};")[0][0]
+    idMaquinaRecursoDownload = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDownload};")[0][0]
+    idMaquinaRecursoUpload = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoUpload};")[0][0]
     idMaquinaRecursoDescartePCTEnt = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTEnt};")[0][0]
     idMaquinaRecursoDescartePCTSai = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTSai};")[0][0]
     idMaquinaRecursoerroPCTEnt = db.executarSelect(f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoerroPCTEnt};")[0][0]
@@ -205,6 +212,14 @@ def capturarDados(idEmpresa, mac):
         maxTotal = db.executarSelect(
             f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoTotal}")
         maxTotal = maxTotal[0][0] if maxTotal else None
+
+        maxDownload = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDownload}")
+        maxDownload = maxDownload[0][0] if maxDownload else None
+
+        maxUpload = db.executarSelect(
+            f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoUpload}")
+        maxUpload = maxUpload[0][0] if maxUpload else None
 
         maxDescaPCTEnt = db.executarSelect(
             f"SELECT max FROM MaquinaRecurso WHERE fkMaquina = {idMaquina} AND fkRecurso = {idRecursoDescartePCTEnt}")
@@ -252,6 +267,30 @@ def capturarDados(idEmpresa, mac):
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoTotal}, {usoTotal}, {isAlertaTotal});"
         db.executarQuery(query)
 
+        velocidadeRede = cd.capturaVelocidadeUploadDownload()
+        download = velocidadeRede['download']
+        upload = velocidadeRede['upload']
+
+        isAlertaDownload = 0
+        if maxDownload:
+            if download >= maxDownload:
+                print(f"ALERTA!!!!!!!! Velocidade de Download CHEGOU A: {download:.2f}")
+                isAlertaDownload = 1
+                print(sentinel.enviar(
+                    f"*Alerta!* :rotating_light: \n\n Velocidade de Download da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{download} Mbps_*"))
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoDownload}, {download}, {isAlertaDownload});"
+        db.executarQuery(query)
+
+        isAlertaUpload = 0
+        if maxUpload:
+            if upload >= maxUpload:
+                print(f"ALERTA!!!!!!!! Velocidade de Download CHEGOU A: {upload:.2f}")
+                isAlertaUpload = 1
+                print(sentinel.enviar(
+                    f"*Alerta!* :rotating_light: \n\n Velocidade de Upload da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{upload} Mbps_*"))
+        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoUpload}, {upload}, {isAlertaUpload});"
+        db.executarQuery(query)
+
         # Capturando descarte de pacotes
         descarteEnt = cd.capturaDescarteEnt()
         descarteSai = cd.capturaDescarteSai()
@@ -294,7 +333,6 @@ def capturarDados(idEmpresa, mac):
 
         # Pausa por 30 segundos
         time.sleep(30)
-
 
 if __name__ == "__main__":
     main()
