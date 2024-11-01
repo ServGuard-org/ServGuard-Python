@@ -267,30 +267,6 @@ def capturarDados(idEmpresa, mac):
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoTotal}, {usoTotal}, {isAlertaTotal});"
         db.executarQuery(query)
 
-        velocidadeRede = cd.capturaVelocidadeUploadDownload()
-        download = velocidadeRede['download']
-        upload = velocidadeRede['upload']
-
-        isAlertaDownload = 0
-        if maxDownload:
-            if download >= maxDownload:
-                print(f"ALERTA!!!!!!!! Velocidade de Download CHEGOU A: {download:.2f}")
-                isAlertaDownload = 1
-                print(sentinel.enviar(
-                    f"*Alerta!* :rotating_light: \n\n Velocidade de Download da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{download} Mbps_*"))
-        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoDownload}, {download}, {isAlertaDownload});"
-        db.executarQuery(query)
-
-        isAlertaUpload = 0
-        if maxUpload:
-            if upload >= maxUpload:
-                print(f"ALERTA!!!!!!!! Velocidade de Download CHEGOU A: {upload:.2f}")
-                isAlertaUpload = 1
-                print(sentinel.enviar(
-                    f"*Alerta!* :rotating_light: \n\n Velocidade de Upload da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{upload} Mbps_*"))
-        query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoUpload}, {upload}, {isAlertaUpload});"
-        db.executarQuery(query)
-
         # Capturando descarte de pacotes
         descarteEnt = cd.capturaDescarteEnt()
         descarteSai = cd.capturaDescarteSai()
@@ -328,6 +304,30 @@ def capturarDados(idEmpresa, mac):
                 # Inserindo uso de disco usado
                 query = f"INSERT INTO CapturaVolume (fkVolume, usado) VALUES ({idDisco}, {usadoDisco})"
                 db.executarQuery(query)
+
+            velocidadeRede = cd.capturaVelocidadeUploadDownload()
+            download = velocidadeRede['download']
+            upload = velocidadeRede['upload']
+
+            isAlertaDownload = 0
+            if maxDownload:
+                if download >= maxDownload:
+                    print(f"ALERTA!!!!!!!! Velocidade de Download CHEGOU A: {download:.2f}")
+                    isAlertaDownload = 1
+                    print(sentinel.enviar(
+                        f"*Alerta!* :rotating_light: \n\n Velocidade de Download da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{download} Mbps_*"))
+            query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoDownload}, {download}, {isAlertaDownload});"
+            db.executarQuery(query)
+
+            isAlertaUpload = 0
+            if maxUpload:
+                if upload >= maxUpload:
+                    print(f"ALERTA!!!!!!!! Velocidade de Download CHEGOU A: {upload:.2f}")
+                    isAlertaUpload = 1
+                    print(sentinel.enviar(
+                        f"*Alerta!* :rotating_light: \n\n Velocidade de Upload da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{upload} Mbps_*"))
+            query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoUpload}, {upload}, {isAlertaUpload});"
+            db.executarQuery(query)
 
         counter += 1
 
