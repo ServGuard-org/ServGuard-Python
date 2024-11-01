@@ -4,3 +4,4 @@ psutil
 py-cpuinfo
 getmac
 requests
+speedtest-cli

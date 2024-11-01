@@ -1,7 +1,14 @@
-import capturaDados as cd
-import database as db
+import speedtest
 
-idMaquinaRecursoTotal = db.executarSelect(
-        f"SELECT idMaquinaRecurso FROM MaquinaRecurso WHERE fkMaquina = 2 AND fkRecurso = 3;")
+def testar_velocidade():
+    st = speedtest.Speedtest()
+    st.download()
+    st.upload()
 
-print(idMaquinaRecursoTotal)
+    download_speed = st.results.download / 10**6  # em Mbps
+    upload_speed = st.results.upload / 10**6  # em Mbps
+
+    print(f"Velocidade de Download: {download_speed:.2f} Mbps")
+    print(f"Velocidade de Upload: {upload_speed:.2f} Mbps")
+
+testar_velocidade()

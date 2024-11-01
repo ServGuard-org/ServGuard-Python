@@ -2,6 +2,8 @@ import psutil as ps
 import cpuinfo as cpi
 from getmac import get_mac_address
 import socket as sk
+import speedtest
+import threading
 
 # Arquivo de Captura de Dados
 '''
@@ -71,3 +73,29 @@ def capturaErrEnt():
 
 def capturaErrSai():
     return ps.net_io_counters().errout
+
+
+def medirDownload(resultados):
+    st = speedtest.Speedtest()
+    resultados["download"] = st.download() / 10**6  # Convertendo para Mbps
+
+def medirUpload(resultados):
+    st = speedtest.Speedtest()
+    resultados["upload"] = st.upload() / 10**6  # Convertendo para Mbps
+
+def capturaVelocidadeUploadDownload():
+    resultados = {}
+
+    # Criando as threads e passando o dicionário de resultados como argumento
+    thread_download = threading.Thread(target=medirDownload, args=(resultados,))
+    thread_upload = threading.Thread(target=medirUpload, args=(resultados,))
+
+    # Iniciando as threads
+    thread_download.start()
+    thread_upload.start()
+
+    # Aguardando as threads terminarem
+    thread_download.join()
+    thread_upload.join()
+
+    return resultados
