@@ -243,7 +243,7 @@ def capturarDados(idEmpresa, mac):
             if usoCPU >= maxCPU:
                 print(f"ALERTA!!!!!!!! USO CPU CHEGOU A: {usoCPU}")
                 isAlertaCPU = 1
-                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso de CPU da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoCPU}%_*"))
+                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso de CPU da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoCPU:.3f}%_*"))
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoCPU}, {usoCPU}, {isAlertaCPU});"
         db.executarQuery(query)
 
@@ -252,7 +252,7 @@ def capturarDados(idEmpresa, mac):
         if maxRAM:
             if usoRAM >= maxRAM:
                 print(f"ALERTA!!!!!!!! USO RAM CHEGOU A: {usoRAM}")
-                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso de RAM da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoRAM}%_*"))
+                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso de RAM da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoRAM:.3f}%_*"))
                 isAlertaRAM = 1
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoRAM}, {usoRAM}, {isAlertaRAM});"
         db.executarQuery(query)
@@ -263,7 +263,7 @@ def capturarDados(idEmpresa, mac):
             if usoTotal >= maxTotal:
                 print(f"ALERTA!!!!!!!! USO Total CHEGOU A: {usoTotal}")
                 isAlertaTotal = 1
-                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso Total _(CPU + RAM)_ da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoTotal}%_*"))
+                print(sentinel.enviar(f"*Alerta!* :rotating_light: \n\n Uso Total _(CPU + RAM)_ da máquina:\n- id: *_{idMaquina}_* \n- Hostname: *_{nomeMaquina}_* \nChegou a: *_{usoTotal:.3f}%_*"))
         query = f"INSERT INTO Captura (fkMaquinaRecurso, registro, isAlerta) VALUES ({idMaquinaRecursoTotal}, {usoTotal}, {isAlertaTotal});"
         db.executarQuery(query)
 
