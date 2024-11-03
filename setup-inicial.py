@@ -4,7 +4,6 @@ import slackWebhook as sentinel
 import os
 import time
 from dotenv import load_dotenv, set_key
-import asyncio
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()

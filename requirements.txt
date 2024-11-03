@@ -5,4 +5,3 @@ py-cpuinfo
 getmac
 requests
 speedtest-cli
-asyncio
