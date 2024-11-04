@@ -198,6 +198,15 @@ def capturarDados(idEmpresa, mac):
 
     while True:
 
+        print("\n\nVerificando se o monitoramento desta máquina está ativo...\n\n")
+        isAtiva = db.executarSelect(f"SELECT isAtiva FROM Maquina WHERE idMaquina = {idMaquina}")[0][0] == 1
+
+        if not isAtiva:
+            print("\n\nO monitoramento desta máquina está inativo!\n\n")
+            verificarAtiva(idMaquina)
+
+        print("\n\nO monitoramento desta máquina está ativo!\n\n Iniciando capturas...\n\n")
+
         # Verificando se max existe antes de acessar
         # Uma vez que o máximo de cada recurso deve ser definido pelo usuário via dashboard
         maxCPU = db.executarSelect(
@@ -332,6 +341,19 @@ def capturarDados(idEmpresa, mac):
 
         # Pausa por 30 segundos
         time.sleep(30)
+
+def verificarAtiva(idMaquina):
+    i = 1
+    while i == 1:
+        print("\n\nVerificando se o monitoramento desta máquina está ativo...\n\n")
+        isAtiva = db.executarSelect(f"SELECT isAtiva FROM Maquina WHERE idMaquina = {idMaquina}")[0][0] == 1
+        if isAtiva:
+            i = 0
+        else:
+            print("\n\nO monitoramento desta máquina está inativo!\n\n")
+            time.sleep(30)
+    return
+
 
 if __name__ == "__main__":
     main()
